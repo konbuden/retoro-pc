@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>X1 STAR SHOOTER</title>
+<style>
+:root{color-scheme:dark;--cyan:#45ffe3;--pink:#ff518d;--muted:#8b9cae}*{box-sizing:border-box}body{margin:0;background:#090e18;color:#e7f5ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;min-height:100svh;padding:32px 20px}main{max-width:880px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #283647;padding-bottom:18px}.brand{font-weight:bold;letter-spacing:3px}.brand span{color:var(--pink)}.tag{font-size:11px;letter-spacing:2px;color:var(--muted)}.intro{margin:32px 0 24px}.eyebrow{font-size:11px;color:var(--cyan);letter-spacing:3px}h1{font-size:clamp(26px,6vw,46px);letter-spacing:-2px;margin:10px 0}h1 span{color:var(--cyan)}.intro p{color:var(--muted);font-size:12px;line-height:1.8}.machine{padding:18px;background:#182231;border:1px solid #39485b;box-shadow:0 20px 70px #0008;border-radius:10px}.machine-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:2px}.light{color:var(--cyan)}.screen{position:relative;border:8px solid #05080e;border-radius:4px;overflow:hidden;background:#000}canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated}.screen:after{content:"";pointer-events:none;position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0002 0px,#0002 1px,transparent 1px,transparent 4px)}.dashboard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}.status{font-size:11px;color:var(--muted);line-height:1.8}#status{color:var(--cyan)}button{font:inherit;cursor:pointer;border:1px solid #52647b;color:#e7f5ff;background:#233044;border-radius:3px;min-height:48px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}button:focus-visible{outline:3px solid #fff;outline-offset:3px}#start{background:var(--cyan);color:#061711;border:0;padding:0 26px;font-size:13px;font-weight:bold;letter-spacing:2px;box-shadow:0 3px 0 #208d80}#start:active{transform:translateY(2px)}.controls{display:flex;justify-content:space-between;margin-top:20px;gap:18px}.arrows{display:flex;gap:10px}.controls button{width:80px;font-size:22px}.controls #fire{width:150px;border-color:var(--pink);color:var(--pink);font-size:14px;letter-spacing:2px}.controls button.active{background:#3a4b61}.help{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:11px;line-height:1.9;margin-top:24px}kbd{color:#e7f5ff}footer{margin-top:32px;border-top:1px solid #283647;padding-top:16px;display:flex;justify-content:space-between;color:#66768b;font-size:10px;letter-spacing:1px}@media(max-width:500px){body{padding:20px 12px}.machine{padding:10px}.tag{display:none}.screen{border-width:4px}.help{display:block}.controls button{width:64px}.controls #fire{width:120px}.status{font-size:10px}#start{padding:0 16px}footer{letter-spacing:0}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand"><span>X1</span> / ARCADE SYSTEM</div><div class="tag">PERSONAL COMPUTER · 1982</div></header>
+<section class="intro"><div class="eyebrow">01 / SPACE DEFENSE</div><h1>X1 <span>STAR SHOOTER</span></h1><p>星の海を駆け抜けろ。迎撃せよ、迫りくる敵機を。<br>320 × 200 pixels. One ship. Endless space.</p></section>
+<section class="machine" aria-label="ゲーム機">
+<div class="machine-top"><span>X1 · COLOR DISPLAY</span><span class="light">● SYSTEM READY</span></div>
+<div class="screen"><canvas id="game" width="320" height="200" aria-label="宇宙シューティングゲーム画面">Canvas対応ブラウザで開いてください。</canvas></div>
+<div class="dashboard"><div class="status"><div id="status" role="status" aria-live="polite">READY — 出撃待機</div><div>HI SCORE <span id="high">000000</span></div></div><button id="start" type="button">START ▶</button></div>
+</section>
+<div class="controls" aria-label="タッチ操作"><div class="arrows"><button id="left" type="button" aria-label="左に移動">◀</button><button id="right" type="button" aria-label="右に移動">▶</button></div><button id="fire" type="button" aria-label="弾を発射">FIRE ↑</button></div>
+<div class="help"><div><kbd>← →</kbd> MOVE &nbsp; / &nbsp; <kbd>SPACE</kbd> FIRE &nbsp; / &nbsp; <kbd>ENTER</kbd> START<br>iPad：左右ボタンと FIRE を長押し。移動しながら連射できます。</div><div>敵機撃墜 +100 / 3機で出撃<br>敵の突破・接触で1機失います。</div></div>
+<footer><span>RETRO COMPUTING CLUB</span><span>NO DOWNLOADS · JUST PLAY</span></footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+  const startButton = document.getElementById('start'), status = document.getElementById('status');
+  const highLabel = document.getElementById('high');
+  const W = 320, H = 200;
+  let mode = 'ready', score = 0, high = 0, lives = 3, shipX = 153;
+  let bullets = [], enemies = [], sparks = [], spawnTimer = 0, shotTimer = 0, invincible = 0, previous = 0;
+  const keys = new Set(), touches = {left:new Set(), right:new Set(), fire:new Set()};
+  const stars = Array.from({length:65}, () => ({x:Math.random()*W,y:Math.random()*H,s:10+Math.random()*24}));
+  const sprites = {ship:['0001000','0011100','0011100','1111111','1101011'], enemy:['1000001','0100010','1111111','1011101','0010100']};
+  try { high = Number(localStorage.getItem('x1-star-high')) || 0; } catch (_) {}
+  highLabel.textContent = String(high).padStart(6,'0');
+  function clearInput(){keys.clear();for(const name of Object.keys(touches)){touches[name].clear();document.getElementById(name).classList.remove('active');}}
+  function start(){clearInput();mode='playing';score=0;lives=3;shipX=153;bullets=[];enemies=[];sparks=[];spawnTimer=.6;shotTimer=0;invincible=0;status.textContent='PLAYING — 迎撃中';startButton.textContent='RESTART ↻';draw();}
+  startButton.addEventListener('click',start);
+  function down(name){return touches[name].size>0 || keys.has(name==='left'?'ArrowLeft':name==='right'?'ArrowRight':'Space');}
+  for(const name of Object.keys(touches)){
+    const button=document.getElementById(name);
+    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);touches[name].add(e.pointerId);button.classList.add('active');});
+    const release=e=>{touches[name].delete(e.pointerId);button.classList.toggle('active',touches[name].size>0);};
+    button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
+  }
+  window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','Enter'].includes(e.code)){e.preventDefault();if(e.code==='Enter'){if(!e.repeat && mode!=='playing')start();}else keys.add(e.code);}});
+  window.addEventListener('keyup',e=>keys.delete(e.code));
+  window.addEventListener('blur',clearInput);
+  document.addEventListener('visibilitychange',()=>{clearInput();previous=0;});
+  function hit(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
+  function burst(x,y){for(let i=0;i<12;i++)sparks.push({x,y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,t:.4});}
+  function lose(){lives--;invincible=1.3;burst(shipX+7,181);if(lives<=0){mode='over';clearInput();status.textContent='GAME OVER — 再出撃できます';startButton.textContent='RETRY ▶';if(score>high){high=score;highLabel.textContent=String(high).padStart(6,'0');try{localStorage.setItem('x1-star-high',String(high));}catch(_){}}}}
+  function update(dt){
+    for(const s of stars){s.y=(s.y+s.s*dt)%H;}
+    for(const p of sparks){p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt;}sparks=sparks.filter(p=>p.t>0);
+    if(mode!=='playing')return;
+    shipX=Math.max(0,Math.min(W-14,shipX+((down('right')?1:0)-(down('left')?1:0))*125*dt));
+    shotTimer-=dt;invincible=Math.max(0,invincible-dt);
+    if(down('fire') && shotTimer<=0){bullets.push({x:shipX+6,y:173,w:2,h:5});shotTimer=.16;}
+    spawnTimer-=dt;
+    if(spawnTimer<=0){enemies.push({x:6+Math.random()*294,y:20,w:14,h:10,speed:24+Math.min(score/250,45),phase:Math.random()*6});spawnTimer=Math.max(.3,.85-score/12000);}
+    for(const b of bullets)b.y-=180*dt;
+    for(const e of enemies){e.y+=e.speed*dt;e.phase+=dt*2;e.x=Math.max(0,Math.min(W-e.w,e.x+Math.sin(e.phase)*15*dt));}
+    for(const b of bullets){for(const e of enemies){if(!e.dead && hit(b,e)){e.dead=true;b.y=-20;score+=100;burst(e.x+7,e.y+5);break;}}}
+    const ship={x:shipX,y:174,w:14,h:10};
+    for(const e of enemies){if(e.dead)continue;if(e.y>H || hit(e,ship)){e.dead=true;if(invincible<=0){lose();if(mode!=='playing')break;}}}
+    bullets=bullets.filter(b=>b.y>-6);enemies=enemies.filter(e=>!e.dead);
+  }
+  function sprite(pattern,x,y,color){ctx.fillStyle=color;pattern.forEach((row,j)=>{for(let i=0;i<row.length;i++)if(row[i]==='1')ctx.fillRect(Math.round(x)+i*2,Math.round(y)+j*2,2,2);});}
+  function text(value,x,y,color='#e7f5ff',size=8){ctx.fillStyle=color;ctx.font=`${size}px monospace`;ctx.textAlign='left';ctx.fillText(value,x,y);}
+  function draw(){
+    ctx.fillStyle='#020611';ctx.fillRect(0,0,W,H);
+    for(const s of stars){ctx.fillStyle=s.s>25?'#8098c1':'#304463';ctx.fillRect(Math.round(s.x),Math.round(s.y),1,1);}
+    ctx.fillStyle='#071321';ctx.fillRect(0,0,W,17);text('SCORE '+String(score).padStart(6,'0'),7,11,'#45ffe3');text('SHIPS '+lives,254,11,'#ff518d');
+    for(const b of bullets){ctx.fillStyle='#fff389';ctx.fillRect(b.x,b.y,b.w,b.h);}
+    for(const e of enemies)sprite(sprites.enemy,e.x,e.y,'#ff518d');
+    if(mode!=='over' && (invincible<=0 || Math.floor(invincible*12)%2===0))sprite(sprites.ship,shipX,174,'#45ffe3');
+    for(const p of sparks){ctx.fillStyle=p.t>.2?'#fff389':'#ff518d';ctx.fillRect(p.x,p.y,2,2);}
+    if(mode!=='playing'){
+      ctx.fillStyle='#020611d9';ctx.fillRect(34,61,252,78);ctx.strokeStyle='#254458';ctx.strokeRect(34.5,61.5,251,77);
+      ctx.textAlign='center';ctx.fillStyle=mode==='over'?'#ff518d':'#45ffe3';ctx.font='bold 16px monospace';ctx.fillText(mode==='over'?'GAME OVER':'X1 STAR SHOOTER',160,86);
+      ctx.font='8px monospace';ctx.fillStyle='#e7f5ff';ctx.fillText(mode==='over'?'FINAL SCORE '+String(score).padStart(6,'0'):'DEFEND THE STAR FRONTIER',160,105);ctx.fillStyle='#fff389';ctx.fillText(mode==='over'?'PRESS RETRY TO LAUNCH':'PRESS START TO LAUNCH',160,124);
+    }
+  }
+  function frame(now){const dt=previous?Math.min((now-previous)/1000,.04):0;previous=now;if(!document.hidden)update(dt);draw();requestAnimationFrame(frame);}
+  draw();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
