@@ -15,10 +15,10 @@
 <section class="machine" aria-label="ゲーム機">
 <div class="machine-top"><span>X1 · COLOR DISPLAY</span><span class="light">● SYSTEM READY</span></div>
 <div class="screen"><canvas id="game" width="320" height="200" aria-label="宇宙シューティングゲーム画面">Canvas対応ブラウザで開いてください。</canvas></div>
-<div class="dashboard"><div class="status"><div id="status" role="status" aria-live="polite">READY — 出撃待機</div><div>HI SCORE <span id="high">000000</span></div></div><button id="bgm" type="button" aria-pressed="true" aria-label="BGMのオン・オフ">BGM ON ♪</button><button id="start" type="button">START ▶</button></div>
+<div class="dashboard"><div class="status"><div id="status" role="status" aria-live="polite">READY — 出撃待機</div><div>HI SCORE <span id="high">000000</span></div></div><button id="bgm" type="button" aria-pressed="true" aria-label="BGMのオン・オフ">BGM 待機 ♪</button><button id="start" type="button">START ▶</button></div>
 </section>
 <div class="controls" aria-label="タッチ操作"><div class="arrows"><button id="left" type="button" aria-label="左に移動">◀</button><button id="right" type="button" aria-label="右に移動">▶</button></div><button id="fire" type="button" aria-label="弾を発射">FIRE ↑</button></div>
-<div class="help"><div><kbd>← →</kbd> MOVE &nbsp; / &nbsp; <kbd>SPACE</kbd> FIRE &nbsp; / &nbsp; <kbd>ENTER</kbd> START<br>iPad：左右ボタンと FIRE を長押し。移動しながら連射できます。</div><div>敵機撃墜 +100 / 3機で出撃<br>敵の突破・接触で1機失います。<br>敵：直進 / 蛇行 &nbsp; · &nbsp; BGM：PSG風3声</div></div>
+<div class="help"><div><kbd>← →</kbd> MOVE &nbsp; / &nbsp; <kbd>SPACE</kbd> FIRE &nbsp; / &nbsp; <kbd>ENTER</kbd> START<br>iPad：左右ボタンと FIRE を長押し。移動しながら連射できます。</div><div>敵機撃墜 +100 / 3機で出撃<br>敵の突破・接触で1機失います。<br>敵：直進 / 蛇行 &nbsp; · &nbsp; BGM：PSG風3声<br>音が出ない場合は BGM 再生をタップ。</div></div>
 <footer><span>RETRO COMPUTING CLUB</span><span>NO DOWNLOADS · JUST PLAY</span></footer>
 </main>
 <script>
@@ -45,12 +45,24 @@
     oscillator.onended=()=>{voices.delete(oscillator);oscillator.disconnect();gain.disconnect();};
     oscillator.start(time);oscillator.stop(time+duration+.01);
   }
+  function updateMusicButton(){
+    bgmButton.setAttribute('aria-pressed',String(musicEnabled));
+    bgmButton.textContent=!musicEnabled?'BGM OFF':
+      audio?.state==='running' && musicTimer!==null?'BGM ON ♪':
+      mode==='playing'?'BGM 再生 ♪':'BGM 待機 ♪';
+  }
+  function beginMusic(){
+    if(!audio || audio.state!=='running' || !musicEnabled || mode!=='playing' || document.hidden || musicTimer!==null)return;
+    nextNote=audio.currentTime+.02;scheduleMusic();musicTimer=setInterval(scheduleMusic,25);updateMusicButton();
+  }
   function stopMusic(){
     clearInterval(musicTimer);musicTimer=null;
-    for(const voice of voices){try{voice.stop();}catch(_){}voice.disconnect();}voices.clear();
+    for(const voice of voices){try{voice.stop();}catch(_){}voice.disconnect();}voices.clear();updateMusicButton();
   }
   function scheduleMusic(){
     if(!audio || audio.state!=='running' || !musicEnabled || mode!=='playing' || document.hidden)return;
+    // Drop elapsed notes after a mobile interruption instead of scheduling a backlog.
+    if(nextNote<audio.currentTime)nextNote=audio.currentTime+.02;
     while(nextNote<audio.currentTime+.12){
       const step=musicStep%melody.length, root=bass[Math.floor(step/4)];
       note(melody[step],nextNote,.125,.022);
@@ -64,15 +76,27 @@
     try{
       const AudioEngine=window.AudioContext || window.webkitAudioContext;
       if(!AudioEngine){bgmButton.textContent='BGM 非対応';bgmButton.disabled=true;return;}
-      if(!audio)audio=new AudioEngine();
-      await audio.resume();
-      if(!musicEnabled || mode!=='playing' || document.hidden || musicTimer!==null)return;
-      nextNote=audio.currentTime+.02;scheduleMusic();musicTimer=setInterval(scheduleMusic,25);
+      if(!audio){
+        // Safari's playback session permits music output even with the silent switch.
+        try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(_){}
+        audio=new AudioEngine();
+        audio.addEventListener('statechange',()=>{
+          if(audio.state!=='running')stopMusic();else beginMusic();
+          updateMusicButton();
+        });
+      }
+      // Request resume and start a one-sample buffer synchronously within the tap.
+      // Some mobile engines need a source started before the resume promise resolves.
+      const resumed=audio.resume();
+      const unlock=audio.createBufferSource();unlock.buffer=audio.createBuffer(1,1,audio.sampleRate);
+      unlock.connect(audio.destination);unlock.onended=()=>unlock.disconnect();unlock.start(0);
+      await resumed;beginMusic();updateMusicButton();
     }catch(_){bgmButton.textContent='BGM 再試行 ♪';}
   }
   bgmButton.addEventListener('click',()=>{
-    musicEnabled=!musicEnabled;bgmButton.setAttribute('aria-pressed',String(musicEnabled));
-    bgmButton.textContent=musicEnabled?'BGM ON ♪':'BGM OFF';
+    // If playback was blocked/interrupted, this tap retries instead of switching off.
+    musicEnabled=!(musicEnabled && audio?.state==='running' && musicTimer!==null);
+    updateMusicButton();
     if(musicEnabled)playMusic();else stopMusic();
   });
   let mode = 'ready', score = 0, high = 0, lives = INITIAL_LIVES, shipX = 153;
@@ -89,7 +113,7 @@
   for(const name of Object.keys(touches)){
     const button=document.getElementById(name);
     button.addEventListener('pointerdown',e=>{e.preventDefault();playMusic();button.setPointerCapture(e.pointerId);touches[name].add(e.pointerId);button.classList.add('active');});
-    const release=e=>{touches[name].delete(e.pointerId);button.classList.toggle('active',touches[name].size>0);};
+    const release=e=>{if(e.type==='pointerup')playMusic();touches[name].delete(e.pointerId);button.classList.toggle('active',touches[name].size>0);};
     button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
   }
   window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','Enter'].includes(e.code)){e.preventDefault();if(e.code==='Enter'){if(!e.repeat && mode!=='playing')start();}else {keys.add(e.code);playMusic();}}});
