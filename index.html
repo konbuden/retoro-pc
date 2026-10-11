@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>X1 STAR SHOOTER</title>
+<title>X1 STAR SHOOTER v2</title>
 <style>
-:root{color-scheme:dark;--cyan:#45ffe3;--pink:#ff518d;--muted:#8b9cae}*{box-sizing:border-box}body{margin:0;background:#090e18;color:#e7f5ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;min-height:100svh;padding:32px 20px}main{max-width:880px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #283647;padding-bottom:18px}.brand{font-weight:bold;letter-spacing:3px}.brand span{color:var(--pink)}.tag{font-size:11px;letter-spacing:2px;color:var(--muted)}.intro{margin:32px 0 24px}.eyebrow{font-size:11px;color:var(--cyan);letter-spacing:3px}h1{font-size:clamp(26px,6vw,46px);letter-spacing:-2px;margin:10px 0}h1 span{color:var(--cyan)}.intro p{color:var(--muted);font-size:12px;line-height:1.8}.machine{padding:18px;background:#182231;border:1px solid #39485b;box-shadow:0 20px 70px #0008;border-radius:10px}.machine-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:2px}.light{color:var(--cyan)}.screen{position:relative;border:8px solid #05080e;border-radius:4px;overflow:hidden;background:#000}canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated}.screen:after{content:"";pointer-events:none;position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0002 0px,#0002 1px,transparent 1px,transparent 4px)}.dashboard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}.status{font-size:11px;color:var(--muted);line-height:1.8}#status{color:var(--cyan)}button{font:inherit;cursor:pointer;border:1px solid #52647b;color:#e7f5ff;background:#233044;border-radius:3px;min-height:48px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}button:focus-visible{outline:3px solid #fff;outline-offset:3px}#start{background:var(--cyan);color:#061711;border:0;padding:0 26px;font-size:13px;font-weight:bold;letter-spacing:2px;box-shadow:0 3px 0 #208d80}#start:active{transform:translateY(2px)}.controls{display:flex;justify-content:space-between;margin-top:20px;gap:18px}.arrows{display:flex;gap:10px}.controls button{width:80px;font-size:22px}.controls #fire{width:150px;border-color:var(--pink);color:var(--pink);font-size:14px;letter-spacing:2px}.controls button.active{background:#3a4b61}.help{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:11px;line-height:1.9;margin-top:24px}kbd{color:#e7f5ff}footer{margin-top:32px;border-top:1px solid #283647;padding-top:16px;display:flex;justify-content:space-between;color:#66768b;font-size:10px;letter-spacing:1px}@media(max-width:500px){body{padding:20px 12px}.machine{padding:10px}.tag{display:none}.screen{border-width:4px}.help{display:block}.controls button{width:64px}.controls #fire{width:120px}.status{font-size:10px}#start{padding:0 16px}footer{letter-spacing:0}}
+:root{color-scheme:dark;--cyan:#45ffe3;--pink:#ff518d;--muted:#8b9cae}*{box-sizing:border-box}body{margin:0;background:#090e18;color:#e7f5ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;min-height:100svh;padding:32px 20px}main{max-width:880px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #283647;padding-bottom:18px}.brand{font-weight:bold;letter-spacing:3px}.brand span{color:var(--pink)}.tag{font-size:11px;letter-spacing:2px;color:var(--muted)}.intro{margin:32px 0 24px}.eyebrow{font-size:11px;color:var(--cyan);letter-spacing:3px}h1{font-size:clamp(26px,6vw,46px);letter-spacing:-2px;margin:10px 0}h1 span{color:var(--cyan)}.intro p{color:var(--muted);font-size:12px;line-height:1.8}.machine{padding:18px;background:#182231;border:1px solid #39485b;box-shadow:0 20px 70px #0008;border-radius:10px}.machine-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:2px}.light{color:var(--cyan)}.screen{position:relative;border:8px solid #05080e;border-radius:4px;overflow:hidden;background:#000}canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated}.screen:after{content:"";pointer-events:none;position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0002 0px,#0002 1px,transparent 1px,transparent 4px)}.dashboard{flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}.status{font-size:11px;color:var(--muted);line-height:1.8}#status{color:var(--cyan)}button{font:inherit;cursor:pointer;border:1px solid #52647b;color:#e7f5ff;background:#233044;border-radius:3px;min-height:48px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}button:focus-visible{outline:3px solid #fff;outline-offset:3px}#bgm{padding:0 12px;font-size:11px}#start{background:var(--cyan);color:#061711;border:0;padding:0 26px;font-size:13px;font-weight:bold;letter-spacing:2px;box-shadow:0 3px 0 #208d80}#start:active{transform:translateY(2px)}.controls{display:flex;justify-content:space-between;margin-top:20px;gap:18px}.arrows{display:flex;gap:10px}.controls button{width:80px;font-size:22px}.controls #fire{width:150px;border-color:var(--pink);color:var(--pink);font-size:14px;letter-spacing:2px}.controls button.active{background:#3a4b61}.help{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:11px;line-height:1.9;margin-top:24px}kbd{color:#e7f5ff}footer{margin-top:32px;border-top:1px solid #283647;padding-top:16px;display:flex;justify-content:space-between;color:#66768b;font-size:10px;letter-spacing:1px}@media(max-width:500px){body{padding:20px 12px}.machine{padding:10px}.tag{display:none}.screen{border-width:4px}.help{display:block}.controls button{width:64px}.controls #fire{width:120px}.status{font-size:10px}#start{padding:0 16px}footer{letter-spacing:0}}
 </style>
 </head>
 <body>
 <main>
 <header><div class="brand"><span>X1</span> / ARCADE SYSTEM</div><div class="tag">PERSONAL COMPUTER · 1982</div></header>
-<section class="intro"><div class="eyebrow">01 / SPACE DEFENSE</div><h1>X1 <span>STAR SHOOTER</span></h1><p>星の海を駆け抜けろ。迎撃せよ、迫りくる敵機を。<br>320 × 200 pixels. One ship. Endless space.</p></section>
+<section class="intro"><div class="eyebrow">01 / SPACE DEFENSE · V2</div><h1>X1 <span>STAR SHOOTER</span></h1><p>星の海を駆け抜けろ。迎撃せよ、迫りくる敵機を。<br>320 × 200 pixels. Three ships. PSG sound.</p></section>
 <section class="machine" aria-label="ゲーム機">
 <div class="machine-top"><span>X1 · COLOR DISPLAY</span><span class="light">● SYSTEM READY</span></div>
 <div class="screen"><canvas id="game" width="320" height="200" aria-label="宇宙シューティングゲーム画面">Canvas対応ブラウザで開いてください。</canvas></div>
-<div class="dashboard"><div class="status"><div id="status" role="status" aria-live="polite">READY — 出撃待機</div><div>HI SCORE <span id="high">000000</span></div></div><button id="start" type="button">START ▶</button></div>
+<div class="dashboard"><div class="status"><div id="status" role="status" aria-live="polite">READY — 出撃待機</div><div>HI SCORE <span id="high">000000</span></div></div><button id="bgm" type="button" aria-pressed="true" aria-label="BGMのオン・オフ">BGM 待機 ♪</button><button id="start" type="button">START ▶</button></div>
 </section>
 <div class="controls" aria-label="タッチ操作"><div class="arrows"><button id="left" type="button" aria-label="左に移動">◀</button><button id="right" type="button" aria-label="右に移動">▶</button></div><button id="fire" type="button" aria-label="弾を発射">FIRE ↑</button></div>
-<div class="help"><div><kbd>← →</kbd> MOVE &nbsp; / &nbsp; <kbd>SPACE</kbd> FIRE &nbsp; / &nbsp; <kbd>ENTER</kbd> START<br>iPad：左右ボタンと FIRE を長押し。移動しながら連射できます。</div><div>敵機撃墜 +100 / 3機で出撃<br>敵の突破・接触で1機失います。</div></div>
+<div class="help"><div><kbd>← →</kbd> MOVE &nbsp; / &nbsp; <kbd>SPACE</kbd> FIRE &nbsp; / &nbsp; <kbd>ENTER</kbd> START<br>iPad：左右ボタンと FIRE を長押し。移動しながら連射できます。</div><div>敵機撃墜 +100 / 3機で出撃<br>敵の突破・接触で1機失います。<br>敵：直進 / 蛇行 &nbsp; · &nbsp; BGM：PSG風3声<br>音が出ない場合は BGM 再生をタップ。</div></div>
 <footer><span>RETRO COMPUTING CLUB</span><span>NO DOWNLOADS · JUST PLAY</span></footer>
 </main>
 <script>
@@ -27,8 +27,79 @@
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const startButton = document.getElementById('start'), status = document.getElementById('status');
   const highLabel = document.getElementById('high');
-  const W = 320, H = 200;
-  let mode = 'ready', score = 0, high = 0, lives = 3, shipX = 153;
+  const W = 320, H = 200, INITIAL_LIVES = 3;
+  // Original melody, three square-wave voices inspired by the X1's PSG.
+  // Audio is created/resumed only from a user gesture (including iPad Safari).
+  const bgmButton = document.getElementById('bgm');
+  let audio = null, musicEnabled = true, musicTimer = null, musicStep = 0, nextNote = 0;
+  const voices = new Set();
+  const melody = [76,79,83,79,74,78,81,78,72,76,79,76,74,78,81,83,
+                  84,83,79,76,81,79,78,74,79,78,76,72,74,78,83,78];
+  const bass = [48,48,50,50,45,45,47,47];
+  function note(midi, time, duration, volume){
+    const oscillator=audio.createOscillator(), gain=audio.createGain();
+    oscillator.type='square';oscillator.frequency.value=440*Math.pow(2,(midi-69)/12);
+    gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(volume,time+.006);
+    gain.gain.setValueAtTime(volume,time+duration*.65);gain.gain.linearRampToValueAtTime(0,time+duration);
+    oscillator.connect(gain);gain.connect(audio.destination);voices.add(oscillator);
+    oscillator.onended=()=>{voices.delete(oscillator);oscillator.disconnect();gain.disconnect();};
+    oscillator.start(time);oscillator.stop(time+duration+.01);
+  }
+  function updateMusicButton(){
+    bgmButton.setAttribute('aria-pressed',String(musicEnabled));
+    bgmButton.textContent=!musicEnabled?'BGM OFF':
+      audio?.state==='running' && musicTimer!==null?'BGM ON ♪':
+      mode==='playing'?'BGM 再生 ♪':'BGM 待機 ♪';
+  }
+  function beginMusic(){
+    if(!audio || audio.state!=='running' || !musicEnabled || mode!=='playing' || document.hidden || musicTimer!==null)return;
+    nextNote=audio.currentTime+.02;scheduleMusic();musicTimer=setInterval(scheduleMusic,25);updateMusicButton();
+  }
+  function stopMusic(){
+    clearInterval(musicTimer);musicTimer=null;
+    for(const voice of voices){try{voice.stop();}catch(_){}voice.disconnect();}voices.clear();updateMusicButton();
+  }
+  function scheduleMusic(){
+    if(!audio || audio.state!=='running' || !musicEnabled || mode!=='playing' || document.hidden)return;
+    // Drop elapsed notes after a mobile interruption instead of scheduling a backlog.
+    if(nextNote<audio.currentTime)nextNote=audio.currentTime+.02;
+    while(nextNote<audio.currentTime+.12){
+      const step=musicStep%melody.length, root=bass[Math.floor(step/4)];
+      note(melody[step],nextNote,.125,.022);
+      note(root+(step%2?12:0),nextNote,.13,.018);
+      note(root+12+[0,7,12,7][step%4],nextNote,.09,.009);
+      musicStep++;nextNote+=.15;
+    }
+  }
+  async function playMusic(){
+    if(!musicEnabled || mode!=='playing' || document.hidden)return;
+    try{
+      const AudioEngine=window.AudioContext || window.webkitAudioContext;
+      if(!AudioEngine){bgmButton.textContent='BGM 非対応';bgmButton.disabled=true;return;}
+      if(!audio){
+        // Safari's playback session permits music output even with the silent switch.
+        try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(_){}
+        audio=new AudioEngine();
+        audio.addEventListener('statechange',()=>{
+          if(audio.state!=='running')stopMusic();else beginMusic();
+          updateMusicButton();
+        });
+      }
+      // Request resume and start a one-sample buffer synchronously within the tap.
+      // Some mobile engines need a source started before the resume promise resolves.
+      const resumed=audio.resume();
+      const unlock=audio.createBufferSource();unlock.buffer=audio.createBuffer(1,1,audio.sampleRate);
+      unlock.connect(audio.destination);unlock.onended=()=>unlock.disconnect();unlock.start(0);
+      await resumed;beginMusic();updateMusicButton();
+    }catch(_){bgmButton.textContent='BGM 再試行 ♪';}
+  }
+  bgmButton.addEventListener('click',()=>{
+    // If playback was blocked/interrupted, this tap retries instead of switching off.
+    musicEnabled=!(musicEnabled && audio?.state==='running' && musicTimer!==null);
+    updateMusicButton();
+    if(musicEnabled)playMusic();else stopMusic();
+  });
+  let mode = 'ready', score = 0, high = 0, lives = INITIAL_LIVES, shipX = 153;
   let bullets = [], enemies = [], sparks = [], spawnTimer = 0, shotTimer = 0, invincible = 0, previous = 0;
   const keys = new Set(), touches = {left:new Set(), right:new Set(), fire:new Set()};
   const stars = Array.from({length:65}, () => ({x:Math.random()*W,y:Math.random()*H,s:10+Math.random()*24}));
@@ -36,22 +107,23 @@
   try { high = Number(localStorage.getItem('x1-star-high')) || 0; } catch (_) {}
   highLabel.textContent = String(high).padStart(6,'0');
   function clearInput(){keys.clear();for(const name of Object.keys(touches)){touches[name].clear();document.getElementById(name).classList.remove('active');}}
-  function start(){clearInput();mode='playing';score=0;lives=3;shipX=153;bullets=[];enemies=[];sparks=[];spawnTimer=.6;shotTimer=0;invincible=0;status.textContent='PLAYING — 迎撃中';startButton.textContent='RESTART ↻';draw();}
+  function start(){stopMusic();musicStep=0;clearInput();mode='playing';score=0;lives=INITIAL_LIVES;shipX=153;bullets=[];enemies=[];sparks=[];spawnTimer=.6;shotTimer=0;invincible=0;status.textContent='PLAYING — 迎撃中';startButton.textContent='RESTART ↻';playMusic();draw();}
   startButton.addEventListener('click',start);
   function down(name){return touches[name].size>0 || keys.has(name==='left'?'ArrowLeft':name==='right'?'ArrowRight':'Space');}
   for(const name of Object.keys(touches)){
     const button=document.getElementById(name);
-    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);touches[name].add(e.pointerId);button.classList.add('active');});
-    const release=e=>{touches[name].delete(e.pointerId);button.classList.toggle('active',touches[name].size>0);};
+    button.addEventListener('pointerdown',e=>{e.preventDefault();playMusic();button.setPointerCapture(e.pointerId);touches[name].add(e.pointerId);button.classList.add('active');});
+    const release=e=>{if(e.type==='pointerup')playMusic();touches[name].delete(e.pointerId);button.classList.toggle('active',touches[name].size>0);};
     button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
   }
-  window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','Enter'].includes(e.code)){e.preventDefault();if(e.code==='Enter'){if(!e.repeat && mode!=='playing')start();}else keys.add(e.code);}});
+  window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','Enter'].includes(e.code)){e.preventDefault();if(e.code==='Enter'){if(!e.repeat && mode!=='playing')start();}else {keys.add(e.code);playMusic();}}});
   window.addEventListener('keyup',e=>keys.delete(e.code));
-  window.addEventListener('blur',clearInput);
-  document.addEventListener('visibilitychange',()=>{clearInput();previous=0;});
+  window.addEventListener('blur',()=>{clearInput();stopMusic();});
+  window.addEventListener('focus',playMusic);
+  document.addEventListener('visibilitychange',()=>{clearInput();previous=0;if(document.hidden)stopMusic();else playMusic();});
   function hit(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
   function burst(x,y){for(let i=0;i<12;i++)sparks.push({x,y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,t:.4});}
-  function lose(){lives--;invincible=1.3;burst(shipX+7,181);if(lives<=0){mode='over';clearInput();status.textContent='GAME OVER — 再出撃できます';startButton.textContent='RETRY ▶';if(score>high){high=score;highLabel.textContent=String(high).padStart(6,'0');try{localStorage.setItem('x1-star-high',String(high));}catch(_){}}}}
+  function lose(){lives--;invincible=1.3;burst(shipX+7,181);if(lives<=0){mode='over';stopMusic();clearInput();status.textContent='GAME OVER — 再出撃できます';startButton.textContent='RETRY ▶';if(score>high){high=score;highLabel.textContent=String(high).padStart(6,'0');try{localStorage.setItem('x1-star-high',String(high));}catch(_){}}}}
   function update(dt){
     for(const s of stars){s.y=(s.y+s.s*dt)%H;}
     for(const p of sparks){p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt;}sparks=sparks.filter(p=>p.t>0);
@@ -60,9 +132,9 @@
     shotTimer-=dt;invincible=Math.max(0,invincible-dt);
     if(down('fire') && shotTimer<=0){bullets.push({x:shipX+6,y:173,w:2,h:5});shotTimer=.16;}
     spawnTimer-=dt;
-    if(spawnTimer<=0){enemies.push({x:6+Math.random()*294,y:20,w:14,h:10,speed:24+Math.min(score/250,45),phase:Math.random()*6});spawnTimer=Math.max(.3,.85-score/12000);}
+    if(spawnTimer<=0){const type=Math.random()<.5?'straight':'wave', baseX=28+Math.random()*250;enemies.push({x:baseX,baseX,type,y:20,w:14,h:10,speed:24+Math.min(score/250,45),phase:0});spawnTimer=Math.max(.3,.85-score/12000);}
     for(const b of bullets)b.y-=180*dt;
-    for(const e of enemies){e.y+=e.speed*dt;e.phase+=dt*2;e.x=Math.max(0,Math.min(W-e.w,e.x+Math.sin(e.phase)*15*dt));}
+    for(const e of enemies){e.y+=e.speed*dt;e.phase+=dt*2;if(e.type==='wave')e.x=e.baseX+Math.sin(e.phase)*22;}
     for(const b of bullets){for(const e of enemies){if(!e.dead && hit(b,e)){e.dead=true;b.y=-20;score+=100;burst(e.x+7,e.y+5);break;}}}
     const ship={x:shipX,y:174,w:14,h:10};
     for(const e of enemies){if(e.dead)continue;if(e.y>H || hit(e,ship)){e.dead=true;if(invincible<=0){lose();if(mode!=='playing')break;}}}
@@ -73,9 +145,9 @@
   function draw(){
     ctx.fillStyle='#020611';ctx.fillRect(0,0,W,H);
     for(const s of stars){ctx.fillStyle=s.s>25?'#8098c1':'#304463';ctx.fillRect(Math.round(s.x),Math.round(s.y),1,1);}
-    ctx.fillStyle='#071321';ctx.fillRect(0,0,W,17);text('SCORE '+String(score).padStart(6,'0'),7,11,'#45ffe3');text('SHIPS '+lives,254,11,'#ff518d');
+    ctx.fillStyle='#071321';ctx.fillRect(0,0,W,17);text('SCORE '+String(score).padStart(6,'0'),7,11,'#45ffe3');text('SHIPS',225,11,'#ff518d');for(let i=0;i<lives;i++)sprite(sprites.ship,258+i*19,4,'#45ffe3');
     for(const b of bullets){ctx.fillStyle='#fff389';ctx.fillRect(b.x,b.y,b.w,b.h);}
-    for(const e of enemies)sprite(sprites.enemy,e.x,e.y,'#ff518d');
+    for(const e of enemies)sprite(sprites.enemy,e.x,e.y,e.type==='wave'?'#fff389':'#ff518d');
     if(mode!=='over' && (invincible<=0 || Math.floor(invincible*12)%2===0))sprite(sprites.ship,shipX,174,'#45ffe3');
     for(const p of sparks){ctx.fillStyle=p.t>.2?'#fff389':'#ff518d';ctx.fillRect(p.x,p.y,2,2);}
     if(mode!=='playing'){
