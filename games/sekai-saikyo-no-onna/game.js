@@ -5,10 +5,10 @@
   const soundButton = document.getElementById('sound');
   const model = X1Duel.createGame(), state = model.game;
   const queued = new Set();
-  const keys = new Set(), touches = Object.fromEntries(['left','right','punch','kick','jump','special'].map(k => [k,new Set()]));
+  const keys = new Set(), touches = Object.fromEntries(['left','right','punch','kick','jump','guard','special'].map(k => [k,new Set()]));
   const bindings = {ArrowLeft:'left',Numpad4:'left',Digit4:'left',ArrowRight:'right',Numpad6:'right',Digit6:'right',
     Numpad1:'punch',Digit1:'punch',KeyZ:'punch',Numpad2:'kick',Digit2:'kick',KeyX:'kick',
-    Numpad3:'jump',Digit3:'jump',KeyC:'jump',KeyV:'special',Digit5:'special',Numpad5:'special'};
+    Numpad3:'jump',Digit3:'jump',KeyC:'jump',KeyD:'guard',Digit0:'guard',Numpad0:'guard',KeyV:'special',Digit5:'special',Numpad5:'special'};
   let previous = 0, paused = false, lastPhase = 'ready', audio = null, soundEnabled = true;
   const soundNodes = new Set();
   function soundLabel() {
@@ -110,6 +110,7 @@
     const arms=pose==='punch'?[[[10,14],[6,18],[12,19]],[[17,14],[25,14],[32,13]]]:
       pose==='kick'?[[[10,14],[6,19],[13,19]],[[17,14],[22,11],[25,12]]]:
       pose==='hurt'?[[[10,14],[5,9],[4,5]],[[17,14],[24,12],[27,9]]]:
+      pose==='guard'?[[[10,14],[19,16],[22,6]],[[17,14],[25,13],[24,5]]]:
       [[[10,14],[6,20],[12,20]],[[17,14],[23,11],[26,12]]];
     arms.forEach(points=>limb(points));
     if(pose==='kick') {
@@ -127,17 +128,54 @@
     return surface;
   }
   const sprites={};
-  for(const female of [false,true])for(const pose of ['stance','walk1','walk2','punch','kick','jump','hurt'])
+  for(const female of [false,true])for(const pose of ['stance','walk1','walk2','punch','kick','jump','hurt','guard'])
     sprites[`${female}-${pose}`]=makeSprite(female,pose);
   function drawFighter(actor,female) {
-    const pose=actor.flash>0?'hurt':actor.action || (actor.y<model.floor?'jump':
+    const pose=actor.flash>0?'hurt':actor.guarding?'guard':actor.action || (actor.y<model.floor?'jump':
       Math.floor(actor.walk)%3===1?'walk1':Math.floor(actor.walk)%3===2?'walk2':'stance');
     ctx.save();ctx.translate(Math.round(actor.x),Math.round(actor.y));ctx.scale(actor.facing,1);
     if(actor.hp<=0){ctx.rotate(-Math.PI/2);ctx.drawImage(sprites[`${female}-hurt`],-22,-30,72,80);}
     else {if(actor.flash>0)ctx.globalAlpha=.65;ctx.drawImage(sprites[`${female}-${pose}`],-28,-80,72,80);}
+    if(actor.guarding){
+      ctx.strokeStyle=actor.blockFlash>0?'#ffffff':'#71c8ff';ctx.lineWidth=actor.blockFlash>0?3:1;
+      ctx.strokeRect(28,-66,5,43);ctx.lineWidth=1;
+    }
     ctx.restore();
+    if(actor.guarding)text(actor.blockFlash>0?'BLOCK!':'GUARD',actor.x,actor.y-84,'#71c8ff',7,'center');
+  }
+  function chanceDisplay(){
+    const next=state.nextChance,seconds=Math.ceil(Math.max(0,next-state.age)*10-1e-8)/10;
+    const green=!!state.special&&state.special.elapsed>=.9&&state.special.elapsed<=1.35;
+    let heading,detail,progress=0,urgent=false;
+    if(['won','lost','draw'].includes(state.phase)){
+      heading='対戦終了';detail='RETRYで新しい3ラウンドを開始';
+    }else if(state.phase==='roundover'){
+      heading='ラウンド終了';detail='次のラウンドは開始8秒後に最初のチャンス';
+    }else if(state.special){
+      const t=state.special.elapsed;
+      heading=green?'今！ 必殺／V／5を1回押す！':t<.9?'緑で押すまで '+(Math.ceil((.9-t)*10)/10).toFixed(1)+' 秒':'タイミング終了';
+      detail=green?'成功で相手に70HP！ 必殺技は防御不可':t<.9?'まだ押さずに待とう。早押しは自分に30HP':'遅押し・時間切れは自分に30HP';
+      progress=Math.min(1,t/2);urgent=true;
+    }else if(!Number.isFinite(next)){
+      heading='このラウンドの必殺チャンスは終了';detail='通常攻撃と防御で決着をつけよう';progress=1;
+    }else{
+      heading='必殺チャンスまで '+seconds.toFixed(1)+' 秒';
+      detail=state.phase==='fight'?'黄色の予告 → 緑の間に必殺／V／5を1回':'ラウンド開始と同時にカウントダウン';
+      progress=Math.max(0,Math.min(1,(state.age-(next===8?0:next-16))/(next===8?8:16)));
+      urgent=state.phase==='fight'&&seconds<=3;
+    }
+    if(paused){heading='一時停止 — '+heading;detail='復帰するまでカウントダウンも停止';}
+    const setText=(id,value)=>{const element=document.getElementById(id);if(element.textContent!==value)element.textContent=value;};
+    setText('chance-clock',heading);setText('chance-detail',detail);
+    document.getElementById('chance-progress').value=progress;
+    document.getElementById('chance-panel').classList.toggle('soon',urgent&&!paused);
+    document.getElementById('chance-panel').classList.toggle('now',green&&!paused);
+    document.getElementById('special').classList.toggle('chance',green&&!paused);
+    setText('special-hint',state.special?heading:`ROUND ${state.round}/3 — ${state.wins}勝 ${state.losses}敗 / 必殺技は上のカウントダウンを見て準備`);
+    return {heading,urgent,green};
   }
   function draw() {
+    const chance=chanceDisplay();
     ctx.imageSmoothingEnabled=false;ctx.fillStyle='#020b05';ctx.fillRect(0,0,320,200);
     // Monochrome-style X1 stage inspired by the magazine's screen captures.
     ctx.fillStyle='#0b2514';ctx.fillRect(0,43,320,120);
@@ -155,8 +193,10 @@
     ctx.fillStyle='#ff9b54';ctx.fillRect(312-112*state.rival.hp/100,18,112*state.rival.hp/100,7);
     text('HP '+state.player.hp,8,36,'#b9cfb7',7);text('HP '+state.rival.hp,312,36,'#b9cfb7',7,'right');
     text('R'+state.round+'/3  '+state.wins+'-'+state.losses,160,35,'#fff389',7,'center');
+    ctx.fillStyle='#08141f';ctx.fillRect(0,42,320,20);
+    text(chance.heading,160,55,chance.green?'#45ffe3':chance.urgent?'#fff389':'#cbdde8',9,'center');
     drawFighter(state.player,false);drawFighter(state.rival,true);
-    text('4/6:MOVE  Z:PUNCH X:KICK C:JUMP V:BIG',160,191,'#b9cfb7',8,'center');
+    text('Z/X:ATTACK C:JUMP D/0:GUARD V:BIG',160,191,'#b9cfb7',8,'center');
     if(state.specialFlash>0){
       ctx.fillStyle=state.specialResult==='success'?'#ffe38955':'#ff557755';ctx.fillRect(0,43,320,121);
       if(state.specialResult==='success'){
@@ -164,7 +204,7 @@
         for(let i=1;i<=8;i++)ctx.lineTo(state.player.x+(state.rival.x-state.player.x)*i/8,state.rival.y-42+(i%2?8:-8));
         ctx.stroke();ctx.lineWidth=1;
       }
-      text(state.specialResult==='success'?'BREAKDOWN!  -70 HP':'MISS!  YOU -30 HP',160,60,'#fff389',12,'center');
+      text(state.specialResult==='success'?'BREAKDOWN!  -70 HP':'MISS!  YOU -30 HP',160,77,'#fff389',12,'center');
     }
     if(state.special&&state.phase==='fight'&&!paused){
       const t=state.special.elapsed,green=t>=.9&&t<=1.35;
@@ -188,10 +228,7 @@
     if(!paused && !document.hidden) {
       const input=Object.fromEntries(Object.entries(touches).map(([name,ids])=>[name,name==='special'?queued.has(name):ids.size>0||keys.has(name)||queued.has(name)]));
       model.tick(dt,input);queued.clear();
-      for(const event of state.events)tone({punch:180,kick:110,jump:440,go:740,end:250,chance:880,special:1320,miss:90}[event],['end','special','miss'].includes(event)?.3:.065);
-      const green=state.special&&state.special.elapsed>=.9&&state.special.elapsed<=1.35;
-      document.getElementById('special').classList.toggle('chance',!!green);
-      document.getElementById('special-hint').textContent=state.special?(green?'今！ 必殺／V／5を1回押す！':'必殺技チャンス：緑のタイミングを待って押そう'):`ROUND ${state.round}/3 — ${state.wins}勝 ${state.losses}敗 / 必殺技は各ラウンドの開始8・24・40秒後（技の演出時間を除く）`;
+      for(const event of state.events)tone({punch:180,kick:110,jump:440,block:320,go:740,end:250,chance:880,special:1320,miss:90}[event],['end','special','miss'].includes(event)?.3:.065);
       if(state.phase!==lastPhase){announce();lastPhase=state.phase;}
     }
     draw();requestAnimationFrame(frame);

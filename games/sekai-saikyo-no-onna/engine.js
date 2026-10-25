@@ -3,12 +3,12 @@
   'use strict';
   const FLOOR = 164, LEFT = 26, RIGHT = 294;
   const MOVES = {
-    punch: { duration: .34, start: .09, end: .19, reach: 39, damage: 9 },
-    kick: { duration: .52, start: .16, end: .29, reach: 55, damage: 14 }
+    punch: { duration: .34, start: .09, end: .19, reach: 39, damage: 4.5 },
+    kick: { duration: .52, start: .16, end: .29, reach: 55, damage: 7 }
   };
   function fighter(x, facing) {
     return { x, y: FLOOR, vy: 0, facing, hp: 100, action: null, attackTime: 0,
-      connected: false, cooldown: 0, stun: 0, flash: 0, walk: 0 };
+      connected: false, cooldown: 0, stun: 0, flash: 0, walk: 0, guarding: false, blockFlash: 0 };
   }
   function createGame(random = Math.random) {
     const game = { phase: 'ready', player: fighter(84, 1), rival: fighter(236, -1),
@@ -31,6 +31,7 @@
     function advance(actor, dt) {
       actor.cooldown = Math.max(0, actor.cooldown - dt);
       actor.stun = Math.max(0, actor.stun - dt); actor.flash = Math.max(0, actor.flash - dt);
+      actor.blockFlash = Math.max(0, actor.blockFlash - dt);
       if (actor.y < FLOOR || actor.vy < 0) {
         actor.vy += 560 * dt; actor.y = Math.min(FLOOR, actor.y + actor.vy * dt);
         if (actor.y >= FLOOR) actor.vy = 0;
@@ -50,6 +51,11 @@
           inFront && Math.abs(attacker.x - defender.x) < move.reach &&
           Math.abs(attacker.y - defender.y) < 29) {
         attacker.connected = true;
+        if (defender.guarding) {
+          defender.blockFlash = .2;
+          game.events.push('block');
+          return;
+        }
         defender.hp = Math.max(0, defender.hp - move.damage);
         defender.flash = .16; defender.stun = .2;
         defender.x = Math.max(LEFT, Math.min(RIGHT, defender.x + attacker.facing * 6));
@@ -76,7 +82,7 @@
     function resolveSpecial(success){
       game.special=null;game.nextChance=game.nextChance<40?game.nextChance+16:Infinity;game.specialResult=success?'success':'failure';game.specialFlash=.8;
       const victim=success?game.rival:game.player;
-      victim.hp=Math.max(0,victim.hp-(success?70:30));victim.flash=.6;victim.stun=.6;
+      victim.hp=Math.max(0,victim.hp-(success?70:30));victim.flash=.6;victim.stun=.6;victim.guarding=false;
       game.player.action=game.rival.action=null;
       game.events.push(success?'special':'miss');finish();
     }
@@ -102,13 +108,17 @@
       const a = game.player, b = game.rival;
       a.facing = b.x >= a.x ? 1 : -1; b.facing = -a.facing;
       advance(a, dt); advance(b, dt);
+      // Guard is held on the ground, after the current attack or hit stun ends.
+      a.guarding = !!input.guard && a.y >= FLOOR && a.vy === 0 && a.stun <= 0 && !a.action;
       const move = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-      if (a.stun <= 0 && !a.action) {
+      if (a.stun <= 0 && !a.action && !a.guarding) {
         a.x = Math.max(LEFT, Math.min(RIGHT, a.x + move * 78 * dt));
         a.walk += Math.abs(move) * dt * 9;
       }
-      if (input.jump) jump(a);
-      if (input.kick) attack(a, 'kick'); else if (input.punch) attack(a, 'punch');
+      if (!a.guarding) {
+        if (input.jump) jump(a);
+        if (input.kick) attack(a, 'kick'); else if (input.punch) attack(a, 'punch');
+      }
       const distance = Math.abs(b.x - a.x);
       game.aiWait -= dt;
       if (b.stun <= 0 && !b.action) {

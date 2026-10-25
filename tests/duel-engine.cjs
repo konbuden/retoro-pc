@@ -5,13 +5,13 @@ function fight(){const m=X1Duel.createGame(()=>.8);m.reset();for(let i=0;i<40;i+
 function quiet(m){m.game.aiWait=100;m.game.rival.stun=100;}
 let m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=134;
 for(let i=0;i<5;i++)m.tick(.04,{punch:true});
-assert.equal(m.game.rival.hp,91);for(let i=0;i<3;i++)m.tick(.04,{punch:true});assert.equal(m.game.rival.hp,91);
+assert.equal(m.game.rival.hp,95.5);for(let i=0;i<3;i++)m.tick(.04,{punch:true});assert.equal(m.game.rival.hp,95.5);
 results.push('Punch connects once during its active window');
 m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=150;
 for(let i=0;i<6;i++)m.tick(.04,{punch:true});assert.equal(m.game.rival.hp,100);
 m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=150;
-for(let i=0;i<6;i++)m.tick(.04,{kick:true});assert.equal(m.game.rival.hp,86);
-results.push('Kick reaches farther than punch and causes 14 damage');
+for(let i=0;i<6;i++)m.tick(.04,{kick:true});assert.equal(m.game.rival.hp,93);
+results.push('Kick reaches farther than punch and causes 7 damage');
 m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=133;m.game.rival.y=100;
 for(let i=0;i<5;i++)m.tick(.04,{punch:true});assert.equal(m.game.rival.hp,100);
 results.push('Attack cannot hit vertically separated fighters');
@@ -26,7 +26,7 @@ for(let i=0;i<8;i++)m.tick(.04,{right:true});assert(m.game.rival.x-m.game.player
 results.push('Grounded fighters cannot overlap');
 function nextFight(m){for(let i=0;i<110&&m.game.phase!=='fight';i++)m.tick(.04);assert.equal(m.game.phase,'fight');}
 function ko(m,win=true){(win?m.game.rival:m.game.player).hp=0;m.tick(.01);}
-m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=134;m.game.rival.hp=9;
+m=fight();quiet(m);m.game.player.x=100;m.game.rival.x=134;m.game.rival.hp=4.5;
 for(let i=0;i<5;i++)m.tick(.04,{punch:true});assert.equal(m.game.phase,'roundover');assert.equal(m.game.rival.hp,0);assert.equal(m.game.wins,1);
 const x=m.game.player.x;m.tick(.04,{right:true});assert.equal(m.game.player.x,x);
 nextFight(m);assert.equal(m.game.round,2);assert.equal(m.game.player.hp,100);assert.equal(m.game.rival.hp,100);assert.equal(m.game.time,60);assert.equal(m.game.nextChance,8);
@@ -60,4 +60,34 @@ m=chance();m.tick(.01,{special:true});m.game.age=23.99;m.tick(.02);assert.ok(m.g
 results.push('Scheduled chances at 8, 24 and 40 seconds resolve once each');
 m=fight();let attacked=false,approached=false;for(let i=0;i<250;i++){m.tick(.04);attacked ||= m.game.player.hp<100;approached ||= m.game.rival.x<236;}assert(attacked);assert(approached);
 results.push('Opponent still approaches and lands attacks');
+assert.equal(m.moves.punch.damage,4.5);assert.equal(m.moves.kick.damage,7);
+for(const attack of ['punch','kick']){
+  m=fight();m.game.aiWait=100;m.game.player.x=100;m.game.rival.x=attack==='punch'?134:150;
+  m.game.rival.action=attack;m.game.rival.attackTime=m.moves[attack].start-.02;
+  m.tick(.04,{guard:true});
+  assert.equal(m.game.player.hp,100);assert.equal(m.game.player.stun,0);assert(m.game.player.guarding);assert(m.game.player.blockFlash>0);assert(m.game.events.includes('block'));assert(m.game.rival.connected);
+  m.tick(.01,{guard:true});assert.equal(m.game.player.hp,100);assert(!m.game.events.includes('block'));
+  m.game.rival.action=attack;m.game.rival.connected=false;m.game.rival.attackTime=m.moves[attack].start-.02;
+  m.tick(.04);assert.equal(m.game.player.hp,100-m.moves[attack].damage);assert(!m.game.player.guarding);
+}
+results.push('Guard blocks punch/kick without chip damage; release restores halved incoming damage');
+m=fight();quiet(m);const guardX=m.game.player.x;m.tick(.04,{guard:true,right:true,punch:true,kick:true,jump:true});assert.equal(m.game.player.x,guardX);assert.equal(m.game.player.action,null);assert.equal(m.game.player.vy,0);
+m.tick(.04,{right:true,kick:true});assert(m.game.player.x>guardX);assert.equal(m.game.player.action,'kick');
+results.push('Guard prevents movement/attacks/jumps; release immediately restores controls');
+m=fight();m.game.aiWait=100;m.game.player.x=100;m.game.rival.x=134;m.game.player.action='kick';m.game.player.attackTime=0;m.game.rival.action='punch';m.game.rival.attackTime=.08;m.tick(.04,{guard:true});assert(!m.game.player.guarding);assert.equal(m.game.player.hp,95.5);
+m=fight();quiet(m);m.game.player.y=m.floor-40;m.game.player.vy=-50;m.tick(.04,{guard:true});assert(!m.game.player.guarding);
+m=fight();quiet(m);m.game.player.stun=.3;m.tick(.04,{guard:true});assert(!m.game.player.guarding);
+results.push('Guard cannot cancel an attack, work in the air, or bypass hit stun');
+m=chance();m.game.player.guarding=true;m.game.rival.guarding=true;m.game.special.elapsed=1;m.tick(.01,{guard:true,special:true});assert.equal(m.game.rival.hp,30);
+m=chance();m.game.player.guarding=true;m.tick(.01,{guard:true,special:true});assert.equal(m.game.player.hp,70);assert(!m.game.player.guarding);
+m=chance();for(let i=0;i<51;i++)m.tick(.04,{guard:true});assert.equal(m.game.player.hp,70);
+results.push('Neither successful special nor its failure/timeout penalty can be guarded');
+for(const aggressive of [false,true]){
+  m=fight();m.game.player.x=100;m.game.rival.x=134;
+  for(let i=0;i<250&&m.game.phase==='fight'&&!m.game.special;i++)m.tick(.04,aggressive?{kick:true,right:m.game.rival.x-m.game.player.x>48}:{});
+  assert.equal(m.game.phase,'fight');assert(m.game.special);assert(m.game.player.hp>0);assert(m.game.rival.hp>0);
+}
+results.push('Active opponents survive to the first special chance with and without player attacks');
+m=fight();for(let i=0;i<250&&!m.game.special;i++)m.tick(.04,{guard:true});assert(m.game.special);assert.equal(m.game.player.hp,100);
+results.push('Holding guard safely reaches the first special chance');
 console.log(results.map(s=>'PASS: '+s).join('\n'));
