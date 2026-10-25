@@ -12,10 +12,14 @@
   }
   function createGame(random = Math.random) {
     const game = { phase: 'ready', player: fighter(84, 1), rival: fighter(236, -1),
-      time: 60, countdown: 1.4, aiWait: .6, events: [], hits: 0, age: 0 };
+      time: 60, countdown: 1.4, aiWait: .6, events: [], hits: 0, age: 0,
+      round:1, wins:0, losses:0, roundResult:null, intermission:0, special:null, nextChance:8,
+      specialHeld:false, specialFlash:0, specialResult:null };
     function reset() {
       Object.assign(game, { phase: 'countdown', player: fighter(84, 1), rival: fighter(236, -1),
-        time: 60, countdown: 1.4, aiWait: .6, events: [], hits: 0, age: 0 });
+        time: 60, countdown: 1.4, aiWait: .6, events: [], hits: 0, age: 0,
+        round:1, wins:0, losses:0, roundResult:null, intermission:0, special:null, nextChance:8,
+        specialHeld:false, specialFlash:0, specialResult:null });
     }
     function jump(actor) {
       if (actor.y >= FLOOR && actor.stun <= 0) { actor.vy = -205; game.events.push('jump'); }
@@ -54,21 +58,47 @@
       }
     }
     function finish() {
-      if (game.player.hp <= 0 && game.rival.hp <= 0) game.phase = 'draw';
-      else if (game.player.hp <= 0) game.phase = 'lost';
-      else if (game.rival.hp <= 0) game.phase = 'won';
-      else if (game.time <= 0) game.phase = game.player.hp === game.rival.hp ? 'draw' :
-        game.player.hp > game.rival.hp ? 'won' : 'lost';
-      if (game.phase !== 'fight') game.events.push('end');
+      let result=null;
+      if (game.player.hp<=0 && game.rival.hp<=0) result='draw';
+      else if (game.player.hp<=0) result='lost';
+      else if (game.rival.hp<=0) result='won';
+      else if(game.time<=0) result=game.player.hp===game.rival.hp?'draw':game.player.hp>game.rival.hp?'won':'lost';
+      if(!result)return;
+      game.roundResult=result;if(result==='won')game.wins++;if(result==='lost')game.losses++;
+      game.special=null;game.events.push('end');
+      if(game.round===3)game.phase=game.wins===game.losses?'draw':game.wins>game.losses?'won':'lost';
+      else {game.phase='roundover';game.intermission=2.5;}
+    }
+    function nextRound(){
+      Object.assign(game,{round:game.round+1,phase:'countdown',player:fighter(84,1),rival:fighter(236,-1),
+        time:60,countdown:1.4,aiWait:.6,age:0,nextChance:8,special:null,specialFlash:0,specialResult:null,roundResult:null});
+    }
+    function resolveSpecial(success){
+      game.special=null;game.nextChance=game.nextChance<40?game.nextChance+16:Infinity;game.specialResult=success?'success':'failure';game.specialFlash=.8;
+      const victim=success?game.rival:game.player;
+      victim.hp=Math.max(0,victim.hp-(success?70:30));victim.flash=.6;victim.stun=.6;
+      game.player.action=game.rival.action=null;
+      game.events.push(success?'special':'miss');finish();
     }
     function tick(dt, input = {}) {
       dt = Math.max(0, Math.min(dt, .04)); game.events = [];
+      const pressed=!!input.special&&!game.specialHeld;game.specialHeld=!!input.special;
+      game.specialFlash=Math.max(0,game.specialFlash-dt);
+      if(game.phase==='roundover'){game.intermission-=dt;if(game.intermission<=0)nextRound();return;}
       if (game.phase === 'countdown') {
         game.countdown -= dt; if (game.countdown <= 0) { game.phase = 'fight'; game.events.push('go'); }
         return;
       }
       if (game.phase !== 'fight') return;
+      finish();if(game.phase!=='fight')return;
+      if(game.special){
+        game.special.elapsed+=dt;
+        if(pressed)resolveSpecial(game.special.elapsed>=.9&&game.special.elapsed<=1.35);
+        else if(game.special.elapsed>=2)resolveSpecial(false);
+        return;
+      }
       game.time = Math.max(0, game.time - dt); game.age += dt;
+      if(game.age>=game.nextChance){game.special={elapsed:0};game.events.push('chance');return;}
       const a = game.player, b = game.rival;
       a.facing = b.x >= a.x ? 1 : -1; b.facing = -a.facing;
       advance(a, dt); advance(b, dt);
