@@ -36,5 +36,18 @@ event('window:keydown',{code:'KeyV',repeat:false});frame();assert.equal(model.ga
 model.game.nextChance=Infinity;frame();assert.match(elements.get('chance-clock').textContent,/チャンスは終了/);assert(!/NaN|Infinity/.test(elements.get('chance-clock').textContent));
 event('start:click');frame();assert.match(elements.get('chance-clock').textContent,/8.0 秒/);assert.equal(model.game.player.guarding,false);
 assert(html.includes('id="guard"'));assert(html.includes('id="chance-progress"'));
+// Releasing one binding must not cancel another held key for the same action.
+event('start:click');model.game.phase='fight';model.game.aiWait=100;model.game.rival.stun=100;
+event('window:keydown',{code:'ArrowRight',repeat:false});
+event('window:keydown',{code:'Digit6',repeat:false});
+event('window:keyup',{code:'Digit6'});
+const heldX=model.game.player.x;frame();frame();assert(model.game.player.x>heldX);
+event('window:keyup',{code:'ArrowRight'});
+event('window:keydown',{code:'KeyD',repeat:false});
+event('window:keydown',{code:'Digit0',repeat:false});
+event('window:keyup',{code:'Digit0'});frame();assert(model.game.player.guarding);
+event('window:keyup',{code:'KeyD'});frame();assert(!model.game.player.guarding);
+console.log('PASS: overlapping key bindings retain movement and guard until every key is released');
 console.log('PASS: renamed title, colors, V/touch input, repeat protection, rounds, pause and selector');
 console.log('PASS: D/0 and touch guard/release/cancel, blur clears guard, countdown/bar/3-second warning, green prompt, next chance, pause and reset');
+
