@@ -72,12 +72,12 @@
     for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,release);
   }
   window.addEventListener('keydown',event=>{
-    if (bindings[event.code]) { event.preventDefault();if(bindings[event.code]!=='special')keys.add(bindings[event.code]);if(!event.repeat&&['punch','kick','jump','special'].includes(bindings[event.code]))queued.add(bindings[event.code]);unlockSound(); }
+    if (bindings[event.code]) { event.preventDefault();if(bindings[event.code]!=='special')keys.add(event.code);if(!event.repeat&&['punch','kick','jump','special'].includes(bindings[event.code]))queued.add(bindings[event.code]);unlockSound(); }
     else if (event.code==='Enter' && !event.repeat && !['fight','countdown','roundover'].includes(state.phase)) {
       event.preventDefault();start();
     }
   });
-  window.addEventListener('keyup',event=>keys.delete(bindings[event.code]));
+  window.addEventListener('keyup',event=>keys.delete(event.code));
   function suspend() { paused=true;previous=0;clearInput();stopSound();announce(); }
   function resume() { if(!document.hidden){paused=false;previous=0;announce();} }
   window.addEventListener('blur',suspend);window.addEventListener('focus',resume);
@@ -226,7 +226,8 @@
   function frame(now) {
     const dt=previous?Math.min((now-previous)/1000,.04):0;previous=now;
     if(!paused && !document.hidden) {
-      const input=Object.fromEntries(Object.entries(touches).map(([name,ids])=>[name,name==='special'?queued.has(name):ids.size>0||keys.has(name)||queued.has(name)]));
+      const heldActions=new Set([...keys].map(code=>bindings[code]));
+      const input=Object.fromEntries(Object.entries(touches).map(([name,ids])=>[name,name==='special'?queued.has(name):ids.size>0||heldActions.has(name)||queued.has(name)]));
       model.tick(dt,input);queued.clear();
       for(const event of state.events)tone({punch:180,kick:110,jump:440,block:320,go:740,end:250,chance:880,special:1320,miss:90}[event],['end','special','miss'].includes(event)?.3:.065);
       if(state.phase!==lastPhase){announce();lastPhase=state.phase;}
@@ -235,3 +236,4 @@
   }
   soundLabel();draw();requestAnimationFrame(frame);
 })();
+
