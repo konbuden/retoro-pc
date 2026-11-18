@@ -78,3 +78,16 @@ STARTやBGMボタンのタップで、音声の再開要求と短い無音バッ
 - 画面内と画面上部に「必殺チャンスまで○秒」を常時表示。進行バーと残り3秒からの黄色の予告、緑の「今！」で押すタイミングを案内。停止中はカウントダウンも停止します。
 - スマホでは防御・必殺ボタンを画面下に固定し、対戦画面を見たまま操作できます。
 - 自動テストで半減ダメージ、防御・解除・入力キャンセル、必殺技の防御不可、最初のチャンスまでの生存、予告表示・停止・リセットを確認。ChromiumでもPC操作・必殺技成功、390px幅の表示とタッチ防御の押下・解除、ブラウザエラーなしを確認。物理iPadのSafariは未確認です。
+
+
+## PATROL — The Last Light
+
+ゲーム選択画面 [`games/`](https://konbuden.github.io/retoro-pc/games/) の4本目として追加。
+直接プレイする場合は [`games/patrol/`](https://konbuden.github.io/retoro-pc/games/patrol/) をSafariやChromeで開いてください。iPadの「ファイル」プレビューではJavaScriptが実行されないため、Webサイトから起動します。
+
+- `games/patrol/index.html` の単一HTML。生のWebGL2で地形・湖・雲・機体を描画し、Canvas 2Dで計器とHUDを表示。画像アセットと外部JavaScriptライブラリは不要。外部リソースはGoogle Fontsのみです。
+- マウス移動で操縦、クリックでロール、左ボタン長押しでブースト、F／右クリックでミサイル、Spaceでトップ・チェイス・コックピットの視点切替。
+- iPad：画面をドラッグして操縦。ROLL／BOOST／FIREと視点ボタンを使用。音は初期状態でオフ。SOUND OFFをタップして有効化します。
+- ゲーム内のGAME LIBRARYリンクで一覧へ戻れます。WebGL2とJavaScriptを有効にしたブラウザが必要です。
+- 地形回避、自動巡航、4発のミサイルと再装填、負荷に応じた内部解像度の低下を備えます。
+- 既存のSTAR SHOOTER、ブレーキダウン、CITY HIDE & SEEKは保持しています。物理iPadでの動作確認は未実施です。
